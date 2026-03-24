@@ -199,7 +199,7 @@ async def detect_image(
     heatmap_url = None
 
     if confidence > settings.AGENT_TRIGGER_THRESHOLD and is_fake:
-        background_tasks.add_task(run_investigation, job_id, result["confidence"], sb)
+        background_tasks.add_task(run_investigation, job_id, {"confidence": result["confidence"], "media_type": "image"})
 
     return JSONResponse(
         status_code=200,
