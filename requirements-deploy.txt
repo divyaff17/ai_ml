@@ -46,6 +46,7 @@ tavily-python>=0.3.3
 # ML utilities
 scikit-learn>=1.4.1
 numpy>=1.26.4
+tqdm>=4.27
 
 # Audio
 soundfile>=0.12.1

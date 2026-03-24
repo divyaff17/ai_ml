@@ -13,9 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements-deploy.txt .
 RUN pip install --no-cache-dir -r requirements-deploy.txt \
     && find /usr/local/lib/python3.11 -name "*.pyc" -delete \
-    && find /usr/local/lib/python3.11 -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true \
-    && find /usr/local/lib/python3.11 -name "tests" -type d -exec rm -rf {} + 2>/dev/null || true \
-    && find /usr/local/lib/python3.11 -name "*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true
+    && find /usr/local/lib/python3.11 -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
 # Copy project files
 COPY . .
