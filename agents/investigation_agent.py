@@ -39,14 +39,10 @@ from utils.supabase_utils import retry_fetch, retry_insert, SupabaseWriteError
 # ── LangChain imports ─────────────────────────────────────────────────────────
 # AgentExecutor moved between langchain versions — try multiple import paths.
 try:
-    from langchain.agents import AgentExecutor
+    from langchain.agents import AgentExecutor, create_tool_calling_agent
 except ImportError:
     from langchain.agents.agent import AgentExecutor  # type: ignore[no-redef]
-
-try:
-    from langchain.agents import create_tool_calling_agent
-except ImportError:
-    from langchain_core.agents import create_tool_calling_agent  # type: ignore[no-redef]
+    from langchain.agents import create_tool_calling_agent  # type: ignore[no-redef]
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_anthropic import ChatAnthropic
