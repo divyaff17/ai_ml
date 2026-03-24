@@ -26,16 +26,9 @@ RUN rm -rf tests/ .github/ .vscode/ .pytest_cache/ .ruff_cache/ __pycache__/ \
     pip_freeze_backup.txt to_uninstall.txt docker-compose.yml \
     training/ evaluation/ scripts/
 
-# Pre-download and cache HuggingFace models during build (not at runtime)
+# HF model cache dir (downloaded on first startup, cached by Railway across deploys)
 ENV TRANSFORMERS_CACHE=/app/.cache/huggingface
 ENV HF_HOME=/app/.cache/huggingface
-RUN python -c "\
-import os; \
-os.makedirs('/app/.cache/huggingface', exist_ok=True); \
-from transformers import Wav2Vec2Processor, Wav2Vec2ForSequenceClassification; \
-Wav2Vec2Processor.from_pretrained('facebook/wav2vec2-base'); \
-Wav2Vec2ForSequenceClassification.from_pretrained('facebook/wav2vec2-base', num_labels=2); \
-print('HuggingFace model cached successfully')"
 
 # Create non-root user
 RUN useradd -m appuser && chown -R appuser:appuser /app
@@ -43,5 +36,5 @@ USER appuser
 
 EXPOSE 8000
 
-# Single worker + longer timeout to survive heavy model loading
+# Single worker + longer timeout to survive model loading on first startup
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--timeout-keep-alive", "75"]
