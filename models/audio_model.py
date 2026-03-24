@@ -22,6 +22,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 from typing import Optional
+import os
 
 import torch
 import torch.nn.functional as F
@@ -75,14 +76,28 @@ class DeepfakeAudioModel:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info("Loading DeepfakeAudioModel on {} …", self.device)
 
+        # ── Set HF token if available (avoids rate-limit warnings) ────────────
+        _hf_token: Optional[str] = os.environ.get("HF_TOKEN")
+        if not _hf_token:
+            try:
+                import config as _cfg
+                _hf_token = getattr(_cfg.settings, "HF_TOKEN", None)
+            except Exception:
+                pass
+        if _hf_token:
+            os.environ.setdefault("HUGGING_FACE_HUB_TOKEN", _hf_token)
+
         # ── Processor (feature extractor) ─────────────────────────────────────
-        self._processor = Wav2Vec2Processor.from_pretrained(_MODEL_ID)
+        self._processor = Wav2Vec2Processor.from_pretrained(
+            _MODEL_ID, token=_hf_token
+        )
 
         # ── Classifier model ─────────────────────────────────────────────────
         self._model = Wav2Vec2ForSequenceClassification.from_pretrained(
             _MODEL_ID,
             num_labels=2,
             problem_type="single_label_classification",
+            token=_hf_token,
         )
         self._model.eval().to(self.device)
 
@@ -129,8 +144,9 @@ class DeepfakeAudioModel:
 
         p = Path(path)
         if not p.exists():
-            logger.warning(
-                "Audio checkpoint '{}' not found — using base weights.", path
+            logger.info(
+                "No audio checkpoint at '{}' — using base pre-trained weights. "
+                "Expected on first deploy before training.", path
             )
             return
 

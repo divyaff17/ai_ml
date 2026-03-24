@@ -45,29 +45,50 @@ def _ring_buffer_sink(message) -> None:
 logger.add(_ring_buffer_sink, level=settings.LOG_LEVEL, format="{message}")
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info("Loading models...")
-    app.state.vision_model = DeepfakeVisionModel()
-
-    # In test environment, skip loading weights to speed up
+def _load_vision_model() -> DeepfakeVisionModel:
+    """Load the vision model in a thread so it doesn't block the event loop."""
     import os
 
+    model = DeepfakeVisionModel()
     if os.environ.get("APP_ENV") != "test":
         try:
-            app.state.vision_model.load_checkpoint(settings.MODEL_CHECKPOINT)
+            model.load_checkpoint(settings.MODEL_CHECKPOINT)
         except Exception as e:
             logger.warning(f"Could not load vision checkpoint: {e}")
+    return model
 
-    app.state.face_extractor = FaceExtractor()
-    app.state.audio_model = DeepfakeAudioModel()
 
+def _load_audio_model() -> DeepfakeAudioModel:
+    """Load the audio model in a thread so it doesn't block the event loop."""
+    import os
+
+    model = DeepfakeAudioModel()
     if os.environ.get("APP_ENV") != "test":
         try:
-            app.state.audio_model.load_checkpoint(settings.AUDIO_CHECKPOINT)
+            model.load_checkpoint(settings.AUDIO_CHECKPOINT)
         except Exception as e:
             logger.warning(f"Could not load audio checkpoint: {e}")
+    return model
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    import asyncio
+    from concurrent.futures import ThreadPoolExecutor
+
+    logger.info("Loading models...")
+    loop = asyncio.get_event_loop()
+
+    with ThreadPoolExecutor() as pool:
+        # Load models in threads so the event loop stays alive
+        # and uvicorn doesn't kill the worker for being unresponsive
+        vision_future = loop.run_in_executor(pool, _load_vision_model)
+        audio_future = loop.run_in_executor(pool, _load_audio_model)
+
+        app.state.vision_model = await vision_future
+        app.state.audio_model = await audio_future
+
+    app.state.face_extractor = FaceExtractor()
     app.state.supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
     logger.info("All models loaded. API ready.")
     yield

@@ -2,6 +2,8 @@
 config.py — Application settings loaded from .env via pydantic-settings.
 """
 
+from typing import Optional
+
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
 from loguru import logger
@@ -26,6 +28,7 @@ class Settings(BaseSettings):
     AGENT_TRIGGER_THRESHOLD: float = 0.85
     API_URL: str = "http://localhost:8000"
     LOG_LEVEL: str = "INFO"
+    HF_TOKEN: Optional[str] = None
 
     @field_validator("SUPABASE_URL")
     @classmethod
@@ -86,6 +89,7 @@ MAX_AUDIO_MB = settings.MAX_AUDIO_MB
 FAKE_THRESHOLD = settings.FAKE_THRESHOLD
 AGENT_TRIGGER_THRESHOLD = settings.AGENT_TRIGGER_THRESHOLD
 API_URL = settings.API_URL
+HF_TOKEN = getattr(settings, 'HF_TOKEN', None)
 
 # Create necessary dirs
 (BASE_DIR / "logs").mkdir(exist_ok=True)

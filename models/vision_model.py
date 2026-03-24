@@ -151,8 +151,9 @@ class DeepfakeVisionModel:
 
         ckpt = Path(path)
         if not ckpt.exists():
-            logger.warning(
-                "Checkpoint '{}' not found — using pretrained backbone weights.", path
+            logger.info(
+                "No checkpoint found at '{}' — using pretrained backbone weights. "
+                "This is expected on first deploy before training.", path
             )
             return
 
