@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment secrets — never commit this
+.env
+
+# Model checkpoints
+models/checkpoints/*.pth
+models/checkpoints/*.pt
+models/checkpoints/*.bin
+models/checkpoints/*.safetensors
+
+# Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Logs
+*.log
+logs/
+
+# Temp / uploads
+tmp/
+uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp

@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - redis
+    restart: unless-stopped
+    # Use GPU if available (requires Docker Compose v1.28.0+)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  worker:
+    build: .
+    command: celery -A tasks.celery_app worker --loglevel=info -P solo
+    env_file: .env
+    depends_on:
+      - redis
+      - api
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  gradio:
+    build: .
+    command: python app.py
+    ports:
+      - "7860:7860"
+    env_file: .env
+    depends_on:
+      - api
+    restart: unless-stopped
