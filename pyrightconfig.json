@@ -7,6 +7,8 @@
   "extraPaths": ["."],
   "pythonVersion": "3.11",
   "pythonPlatform": "Windows",
+  "pythonPath": "D:\\PYTHON\\python.exe",
+  "venvPath": "",
   "reportMissingImports": "warning",
   "reportMissingModuleSource": "none"
 }
