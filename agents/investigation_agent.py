@@ -37,7 +37,17 @@ import config
 from utils.supabase_utils import retry_fetch, retry_insert, SupabaseWriteError
 
 # ── LangChain imports ─────────────────────────────────────────────────────────
-from langchain.agents import AgentExecutor, create_tool_calling_agent
+# AgentExecutor moved between langchain versions — try multiple import paths.
+try:
+    from langchain.agents import AgentExecutor
+except ImportError:
+    from langchain.agents.agent import AgentExecutor  # type: ignore[no-redef]
+
+try:
+    from langchain.agents import create_tool_calling_agent
+except ImportError:
+    from langchain_core.agents import create_tool_calling_agent  # type: ignore[no-redef]
+
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_anthropic import ChatAnthropic
 from langchain_community.tools.tavily_search import TavilySearchResults
