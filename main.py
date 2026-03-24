@@ -153,6 +153,7 @@ def _validate_file_ext(filename: str, allowed_exts: set[str]) -> str:
 
 async def _read_file_bytes(file: UploadFile, max_bytes: int, label: str) -> bytes:
     data = await file.read()
+    assert isinstance(data, bytes)
     if len(data) > max_bytes:
         mb = max_bytes / (1024 * 1024)
         raise HTTPException(

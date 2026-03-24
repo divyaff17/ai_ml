@@ -149,9 +149,10 @@ def _extract_audio_track(video_path: str, out_wav_path: str) -> bool:
             timeout=120,
         )
         if result.returncode != 0:
+            err_msg = result.stderr.decode(errors="ignore")[:500] if result.stderr else "Unknown ffmpeg error"
             logger.warning(
                 "ffmpeg audio extraction failed: {}",
-                result.stderr.decode(errors="ignore")[:500],
+                err_msg,
             )
             return False
         return Path(out_wav_path).stat().st_size > 0
@@ -308,7 +309,7 @@ def process_video(self, job_id: str, media_url: Optional[str]) -> dict:
 
         # ── 6. Fuse scores ────────────────────────────────────────────────────
         fused_score, is_fake = fuse_scores(vision_score, t_score, audio_score)
-        confidence = round(fused_score, 4)
+        confidence = float(f"{fused_score:.4f}")
         logger.info(
             "Fused score: {:.4f}, is_fake={} for job {}", fused_score, is_fake, job_id
         )
@@ -332,10 +333,10 @@ def process_video(self, job_id: str, media_url: Optional[str]) -> dict:
             "status": "completed",
             "is_fake": is_fake,
             "confidence": confidence,
-            "vision_score": round(vision_score, 4),
-            "temporal_score": round(t_score, 4),
-            "audio_score": round(audio_score, 4) if audio_score is not None else None,
-            "fused_score": round(fused_score, 4),
+            "vision_score": float(f"{vision_score:.4f}"),
+            "temporal_score": float(f"{t_score:.4f}"),
+            "audio_score": float(f"{audio_score:.4f}") if audio_score is not None else None,
+            "fused_score": float(f"{fused_score:.4f}"),
             "heatmap_url": heatmap_url,
             "agent_triggered": agent_triggered,
         }
@@ -359,10 +360,10 @@ def process_video(self, job_id: str, media_url: Optional[str]) -> dict:
                         "media_type": "video",
                         "is_fake": is_fake,
                         "confidence": confidence,
-                        "vision_score": round(vision_score, 4),
-                        "temporal_score": round(t_score, 4),
+                        "vision_score": float(f"{vision_score:.4f}"),
+                        "temporal_score": float(f"{t_score:.4f}"),
                         "audio_score": (
-                            round(audio_score, 4) if audio_score is not None else None
+                            float(f"{audio_score:.4f}") if audio_score is not None else None
                         ),
                     },
                 )
@@ -383,3 +384,5 @@ def process_video(self, job_id: str, media_url: Optional[str]) -> dict:
 
     finally:
         Path(tmp_video_path).unlink(missing_ok=True)
+    
+    return {}

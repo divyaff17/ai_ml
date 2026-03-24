@@ -92,9 +92,10 @@ def sample_video() -> bytes:
         for _ in range(10):
             writer.write(black_frame)
         writer.release()
-        return Path(tmp_path).read_bytes()
+        result_bytes = Path(tmp_path).read_bytes()
     finally:
         Path(tmp_path).unlink(missing_ok=True)
+    return result_bytes
 
 
 @pytest.fixture(scope="session")
