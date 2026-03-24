@@ -36,16 +36,6 @@ jobs:
         run: |
           pytest tests/ -v
 
-  deploy_railway:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Deploy to Railway
-        uses: bervProject/railway-deploy@main
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: deepfake-detector-api
+  # Railway auto-deploys from this repo via its GitHub integration.
+  # No manual deploy step needed here.
