@@ -97,6 +97,30 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Deepfake Detector API", lifespan=lifespan)
 
+from fastapi.openapi.utils import get_openapi
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Deepfake Detector API",
+        version="0.1.0",
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-Key",
+            "description": "Enter your API Secret Key here"
+        }
+    }
+    openapi_schema["security"] = [{"ApiKeyAuth": []}]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
